@@ -2,42 +2,153 @@
 library(shiny)
 library(shinydashboard)
 library(leaflet)
-
+library(shinyjs)
 
 shinyUI(
   dashboardPage(
     dashboardHeader(title = "Header 1"),
     dashboardSidebar(collapsed = FALSE,
+                     
+                     tags$head(
+                       tags$style(HTML(".sidebar { height: 90vh; overflow-y: auto;}"))
+                     ),
+                     
                      sidebarMenu(
-                       menuItem("Drop Down 1", icon = icon("chevron-right"), startExpanded = TRUE,
+                       menuItem("Missing/Incident", icon = icon("chevron-right"), startExpanded = TRUE,
                                 checkboxGroupInput("mapOption",
-                                                   "Choose which data to add",
+                                                   "Choose Databases",
                                                    choices = c("Missing Children Data" = "miss",
                                                                "Incidents Data" = "inci"),
                                                    selected = c("miss","inci"))  
                        )
                      ),
                      sidebarMenu(
-                       menuItem("Drop Down 2", icon = icon("chevron-right"), startExpanded = TRUE,
-                                selectInput("state", "Sort by state", choices = sort(c(missing$`Missing State`)),
-                                            multiple = TRUE),
+                       
+                       menuItem("Data in Common", icon = icon("chevron-right"), startExpanded = TRUE,
                                 
-                                selectInput("city", "Sort by city", choices = sort(c(missing$`Missing City`,
-                                                                                     attempts$`Incident City`)),
-                                            multiple = TRUE),
+                                sidebarMenu(
+                                  
+                                  menuItem("Location", tabName = "rawdata", icon=icon("toggle-right"),startExpanded = TRUE,
+                                           
+                                           selectInput("state", "Sort by state", choices = sort(c(as.character(attempts$Incident.State),
+                                                                                                  as.character(missing$Missing.State))),
+                                                       multiple = TRUE),
+                                           
+                                           selectInput("city", "Sort by city", choices = sort(c(as.character(attempts$Incident.City),
+                                                                                                as.character(missing$Missing.City))),
+                                                       multiple = TRUE),
+                                           
+                                           selectInput("zip", "Sort by zip", choices = sort(c(attempts$ZIP,missing$ZIP)),
+                                                       multiple = TRUE)
+                                           
+                                  )),
                                 
-                                selectInput("zip", "Sort by zip", choices = sort(c(missing$ZIP,
-                                                                                   attempts$ZIP)),
-                                            multiple = TRUE),
+                                sidebarMenu(
+                                  menuItem("Child Info", tabName = "rawdata", icon=icon("toggle-right"),startExpanded = TRUE,
+                                           
+                                           selectInput("caseID", "Sort by case id", choices = sort(c(attempts$Case.Number,missing$Case.Number)),
+                                                       multiple = TRUE),
+                                           
+                                           selectInput("gender", "Gender", choices = sort(c(as.character(attempts$Child.Gender.1),
+                                                                                        as.character(missing$Gender))),
+                                                       multiple = TRUE),
+                                           
+                                           selectInput("race", "Race", choices = sort(c(as.character(attempts$Child.Race.1),
+                                                                                        as.character(missing$Race))),
+                                                       multiple = TRUE)
+                                           
+                                  )),
                                 
-                                selectInput("caseID", "Sort by case id", choices = sort(c(missing$`Case Number`,
-                                                                                          attempts$`Case Number`)),
-                                            multiple = TRUE)
+                                sidebarMenu(
+                                  menuItem("Offender Info", tabName = "rawdata", icon=icon("toggle-right"),startExpanded = TRUE,
+                                           
+                                           selectInput("vehstyle", "Vehicle Style", choices = sort(c(as.character(attempts$Vehicle.Style.1),
+                                                                                                     as.character(missing$Vehicle.Style))),
+                                                       multiple = TRUE),
+                                           
+                                           selectInput("vehcolor", "Vehicle Color", choices = sort(c(as.character(attempts$Vehicle.Color.1),
+                                                                                                     as.character(missing$Vehicle.Color))),
+                                                       multiple = TRUE))                 )
+                       )
+                     ),
+                     sidebarMenu(
+                       
+                       menuItem("Attempts Only Data", icon = icon("chevron-right"), startExpanded = TRUE,
+                                
+                                sidebarMenu(
+                                  
+                                  menuItem("Case Info", tabName = "rawdata", icon=icon("toggle-right"),startExpanded = TRUE,
+                                           
+                                           selectInput("casetype", "Case Type", choices = sort((as.character(attempts$Case.Type))),
+                                                       multiple = TRUE),
+                                           
+                                           selectInput("casestatus", "Case Status", choices = sort(as.character(attempts$Status)),
+                                                       multiple = TRUE),
+                                           
+                                           selectInput("casesource", "Case Status", choices = sort(as.character(attempts$Source)),
+                                                       multiple = TRUE)
+                                  )),
+                                
+                                sidebarMenu(
+                                  menuItem("Location Info", tabName = "rawdata", icon=icon("toggle-right"),startExpanded = TRUE,
+                                           
+                                           selectInput("address", "Address", choices = sort(as.character(attempts$Incident.Location)),
+                                                       multiple = TRUE),
+                                           
+                                           selectInput("locationtype", "Location Type", choices = sort(as.character(attempts$Incident.Location.Type)),
+                                                       multiple = TRUE),
+                                           
+                                           selectInput("county", "County", choices = sort(as.character(attempts$Incident.County)),
+                                                       multiple = TRUE)
+                                  )),
+                                
+                                sidebarMenu(
+                                  menuItem("Child Info", tabName = "rawdata", icon=icon("toggle-right"),startExpanded = TRUE,
+                                           
+                                           selectInput("childID", "Child ID", choices = sort(c(attempts$Child.ID.1,
+                                                                                               attempts$Child.ID.2,
+                                                                                               attempts$Child.ID.3,
+                                                                                               attempts$Child.ID.4,
+                                                                                               attempts$Child.ID.5,
+                                                                                               attempts$Child.ID.6)),
+                                                       multiple = TRUE),
+                                           
+                                           selectInput("gotaway", "How They Got Away", choices = sort(as.character(attempts$How.Got.Away)),
+                                                       multiple = TRUE)
+                                  )),
+                                sidebarMenu(
+                                  menuItem("Offender Info", tabName = "rawdata", icon=icon("toggle-right"),startExpanded = TRUE,
+                                           
+                                           selectInput("offendergender", "Offender Gender", choices = sort(c(as.character(attempts$Offender.Gender.1),
+                                                                                                             as.character(attempts$Offender.Gender.2),
+                                                                                                             as.character(attempts$Offender.Gender.3))),
+                                                       multiple = TRUE),
+                                           
+                                           selectInput("offenderage", "Offender Age", choices = sort(c(as.character(attempts$Offender.Age.1),
+                                                                                                       as.character(attempts$Offender.Age.2),
+                                                                                                       as.character(attempts$Offender.Age.3))),
+                                                       multiple = TRUE),
+                                           
+                                           selectInput("offenderpercage", "Offender Perceived Age", choices = sort(c(as.character(attempts$Offender.Perceived.Age.1),
+                                                                                                                     as.character(attempts$Offender.Perceived.Age.2),
+                                                                                                                     as.character(attempts$Offender.Perceived.Age.3))),
+                                                       multiple = TRUE),
+                                           
+                                           radioButtons("animal", "Used Animals", choices = c("No", "Yes")),
+                                           
+                                           radioButtons("candy", "Used Candy", choices = c("No", "Yes")),
+                                           
+                                           radioButtons("money", "Used Money", choices = c("No", "Yes")),
+                                           
+                                           radioButtons("ride", "Offered a Ride", choices = c("No", "Yes"))
+                                  ))
                        )
                      )
+                     
     ),
     dashboardBody(
-      tags$style(type = "text/css", "#map {height: calc(100vh - 80px) !important;}"),
+      useShinyjs(),
+      tags$style(type = "text/css", "#mymap {height: calc(100vh - 80px) !important;}"),
       leafletOutput("mymap")
     )
   )

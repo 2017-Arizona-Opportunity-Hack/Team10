@@ -6,7 +6,7 @@ library(shinyjs)
 
 shinyUI(
   dashboardPage(
-    dashboardHeader(title = "Header 1"),
+    dashboardHeader(title = "NCMEC Map View"),
     dashboardSidebar(collapsed = FALSE,
                      
                      tags$head(
@@ -14,31 +14,41 @@ shinyUI(
                      ),
                      
                      sidebarMenu(
-                       menuItem("Missing/Incident", icon = icon("chevron-right"), startExpanded = TRUE,
+                       menuItem("Main Control", icon = icon("chevron-right"), startExpanded = TRUE,
                                 checkboxGroupInput("mapOption",
                                                    "Choose Databases",
                                                    choices = c("Missing Children Data" = "miss",
                                                                "Incidents Data" = "inci"),
-                                                   selected = c("miss","inci"))  
+                                                   selected = c("miss","inci")),
+                                
+                                actionButton("reset", "Reset Map"),
+                                
+                                div(style="display:inline-block",
+                                    downloadButton("downloadData1", "Download Incident Query"),
+                                    style="float:center"),
+                                
+                                div(style="display:inline-block",
+                                    downloadButton("downloadData2", "Download Missing Query"),
+                                    style="float:center")
                        )
                      ),
                      sidebarMenu(
                        
-                       menuItem("Data in Common", icon = icon("chevron-right"), startExpanded = TRUE,
+                       menuItem("Both Sets Data", icon = icon("chevron-right"), startExpanded = TRUE,
                                 
                                 sidebarMenu(
                                   
                                   menuItem("Location", tabName = "rawdata", icon=icon("toggle-right"),startExpanded = TRUE,
                                            
-                                           selectInput("state", "Sort by state", choices = sort(c(as.character(attempts$Incident.State),
+                                           selectInput("state", "State", choices = sort(c(as.character(attempts$Incident.State),
                                                                                                   as.character(missing$Missing.State))),
                                                        multiple = TRUE),
                                            
-                                           selectInput("city", "Sort by city", choices = sort(c(as.character(attempts$Incident.City),
+                                           selectInput("city", "City", choices = sort(c(as.character(attempts$Incident.City),
                                                                                                 as.character(missing$Missing.City))),
                                                        multiple = TRUE),
                                            
-                                           selectInput("zip", "Sort by zip", choices = sort(c(attempts$ZIP,missing$ZIP)),
+                                           selectInput("zip", "Zip", choices = sort(c(attempts$ZIP,missing$ZIP)),
                                                        multiple = TRUE)
                                            
                                   )),
@@ -46,7 +56,7 @@ shinyUI(
                                 sidebarMenu(
                                   menuItem("Child Info", tabName = "rawdata", icon=icon("toggle-right"),startExpanded = TRUE,
                                            
-                                           selectInput("caseID", "Sort by case id", choices = sort(c(attempts$Case.Number,missing$Case.Number)),
+                                           selectInput("caseID", "Case ID", choices = sort(c(attempts$Case.Number,missing$Case.Number)),
                                                        multiple = TRUE),
                                            
                                            selectInput("gender", "Gender", choices = sort(c(as.character(attempts$Child.Gender.1),
@@ -85,7 +95,7 @@ shinyUI(
                                            selectInput("casestatus", "Case Status", choices = sort(as.character(attempts$Status)),
                                                        multiple = TRUE),
                                            
-                                           selectInput("casesource", "Case Status", choices = sort(as.character(attempts$Source)),
+                                           selectInput("casesource", "Case Source", choices = sort(as.character(attempts$Source)),
                                                        multiple = TRUE)
                                   )),
                                 

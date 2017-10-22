@@ -24,8 +24,7 @@ attempts$Offender.Method.Ride[attempts$Offender.Method.Ride==-1] = 1
 
 shinyServer(function(input, output, session) {
   
-  output$mymap = renderLeaflet({
-    
+  myData = reactive({
     attemptsPoints = attempts
     missingPoints = missing
     
@@ -56,14 +55,14 @@ shinyServer(function(input, output, session) {
     
     # check the date
     #if (input$dateRange[1] != Sys.Date()) {
-      #from = format(input$dateRange[1])
-      #to = format(input$dateRange[2])
-      #cat(as.Date(from))
-      #cat('\n')
-      #cat(to)
-      #dateSeq = seq(from, to, by=1)
-      #attemptsPoints = attemptsPoints[attemptsPoints$`Incident Date` %in% dataSeq,]
-      #missingPoints = missingPoints[missingPoints$`Missing Date` %in% dataSeq,]
+    #from = format(input$dateRange[1])
+    #to = format(input$dateRange[2])
+    #cat(as.Date(from))
+    #cat('\n')
+    #cat(to)
+    #dateSeq = seq(from, to, by=1)
+    #attemptsPoints = attemptsPoints[attemptsPoints$`Incident Date` %in% dataSeq,]
+    #missingPoints = missingPoints[missingPoints$`Missing Date` %in% dataSeq,]
     #}
     
     # check gender
@@ -204,9 +203,47 @@ shinyServer(function(input, output, session) {
       attemptsPoints = attemptsPoints[attemptsPoints$Offender.Method.Ride==1,]
     }
     
+    return(list(attemptsPoints, missingPoints))
+  })
+  
+  observeEvent(input$reset, {
+    updateSelectInput(session, "race", selected = character(0))
+    updateSelectInput(session, "vehstyle", selected = character(0))
+    updateSelectInput(session, "vehcolor", selected = character(0))
+    updateSelectInput(session, "casetype", selected = character(0))
+    updateSelectInput(session, "casesource", selected = character(0))
+    updateSelectInput(session, "casestatus", selected = character(0))
+    updateSelectInput(session, "state", selected = character(0))
+    updateSelectInput(session, "city", selected = character(0))
+    updateSelectInput(session, "zip", selected = character(0))
+    updateSelectInput(session, "caseID", selected = character(0))
+    updateSelectInput(session, "gender", selected = character(0))
+    updateSelectInput(session, "address", selected = character(0))
+    updateSelectInput(session, "locationtype", selected = character(0))
+    updateSelectInput(session, "county", selected = character(0))
+    updateSelectInput(session, "childID", selected = character(0))
+    updateSelectInput(session, "mapOption", selected = c("miss","inci"))
+    updateSelectInput(session, "gotaway", selected = character(0))
+    updateSelectInput(session, "offendergender", selected = character(0))
+    updateSelectInput(session, "offenderage", selected = character(0))
+    updateSelectInput(session, "offenderpercage", selected = character(0))
+    updateRadioButtons(session, "animal", selected = "No")
+    updateRadioButtons(session, "candy", selected = "No")
+    updateRadioButtons(session, "money", selected = "No")
+    updateRadioButtons(session, "ride", selected = "No")
+    })
+  
+  output$mymap = renderLeaflet({
+    
+    attemptsPoints = myData()[[1]]
+    missingPoints = myData()[[2]]
+    
     # get just the zip codes
-    attemptsPoints = cbind(attemptsPoints$LNG, attemptsPoints$LAT)
-    missingPoints = cbind(missingPoints$LNG, missingPoints$LAT)
+    attemptsPointsZip = cbind(attemptsPoints$LNG, attemptsPoints$LAT)
+    missingPointsZip = cbind(missingPoints$LNG, missingPoints$LAT)
+    
+    # create content for popup
+    #content = paste(sep = "<br/")
     
     # check for data selected (missing/attempts) and plot map
     if ("miss" %in% input$mapOption & "inci" %in% input$mapOption) {
@@ -214,26 +251,46 @@ shinyServer(function(input, output, session) {
         addProviderTiles(providers$Stamen.TonerLite,
                          options = providerTileOptions(noWrap = TRUE)
         ) %>%
-        addCircles(data = attemptsPoints) %>%
-        addCircles(data = missingPoints, color = "red")
+        addCircles(data = attemptsPointsZip) %>%
+        addCircles(data = missingPointsZip, color = "red")
     } else if ("miss" %in% input$mapOption) {
       leaflet() %>%
         addProviderTiles(providers$Stamen.TonerLite,
                          options = providerTileOptions(noWrap = TRUE)
         ) %>%
-        addCircles(data = missingPoints, color = "red")
+        addCircles(data = missingPointsZip, color = "red")
     } else if ("inci" %in% input$mapOption) {
       leaflet() %>%
         addProviderTiles(providers$Stamen.TonerLite,
                          options = providerTileOptions(noWrap = TRUE)
         ) %>%
-        addCircles(data = attemptsPoints)
+        addCircles(data = attemptsPointsZip)
     } else {
       leaflet() %>%
         addProviderTiles(providers$Stamen.TonerLite,
                          options = providerTileOptions(noWrap = TRUE)
         )
     }
+    
     })
   
+  output$downloadData1 = downloadHandler(
+    filename = function() {
+      paste("Incidents-", Sys.Date(), ".csv", sep="")
+    },
+    content = function(file) {
+      attemptsFile = myData()[[1]]
+      write.csv(attemptsFile, file)
+    }
+  )
+  
+  output$downloadData2 = downloadHandler(
+    filename = function() {
+      paste("Missing-", Sys.Date(), ".csv", sep="")
+    },
+    content = function(file) {
+      missingFile = myData()[[2]]
+      write.csv(missingFile, file)
+    }
+  )
 })

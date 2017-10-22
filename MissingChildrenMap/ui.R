@@ -38,8 +38,8 @@ shinyUI(
                        menuItem("Main Control", icon = icon("chevron-right"), startExpanded = TRUE,
                                 checkboxGroupInput("mapOption",
                                                    "Choose Databases",
-                                                   choices = c("Missing Children Data" = "miss",
-                                                               "Incidents Data" = "inci"),
+                                                   choices = c("Missing Children Data (Red)" = "miss",
+                                                               "Incidents Data (Blue)" = "inci"),
                                                    selected = c("miss","inci")),
                                 
                                 actionButton("reset", "Reset Map"),

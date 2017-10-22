@@ -225,35 +225,64 @@ shinyServer(function(input, output, session) {
     attemptsPoints = myData()[[1]]
     missingPoints = myData()[[2]]
     
-    # get just the zip codes
-    attemptsPointsZip = cbind(attemptsPoints$LNG, attemptsPoints$LAT)
-    missingPointsZip = cbind(missingPoints$LNG, missingPoints$LAT)
-    
-    # create content for popup
-    content = paste(sep = "<br/>",
-                    as.character(missingPoints$Gender)
-                    )
-    
     # check for data selected (missing/attempts) and plot map
     if ("miss" %in% input$mapOption & "inci" %in% input$mapOption) {
       leaflet() %>%
         addProviderTiles(providers$Stamen.TonerLite,
                          options = providerTileOptions(noWrap = TRUE)
         ) %>%
-        addCircles(data = attemptsPointsZip) %>%
-        addCircles(data = missingPointsZip, color = "red")
+        addCircleMarkers(lng = ~LNG, lat = ~LAT, weight = 1,
+                   popup = ~paste0(
+                     paste("Date Occured:",Incident.Date,sep=" "),
+                     paste(", Child Gender:",Child.Gender.1,sep=" "),
+                     paste(", Child Race:",Child.Race.1,sep=" "),
+                     paste(", Child Age:",Child.Perceived.Age.1,sep=" "),
+                     paste(", How Child Escaped:",How.Got.Away,sep=" "),
+                     paste(", Offender Gender:",Offender.Gender.1,sep=" "),
+                     paste(", Offender Age:",Offender.Age.1,sep=" "),
+                     paste(", Vehicle Style:",Vehicle.Style.1,sep=" "),
+                     paste(", Vehicle Color:",Vehicle.Color.1,sep=" "),
+                     paste(", Location Type:",Incident.Location.Type,sep=" ")
+                   ), data = attemptsPoints) %>% 
+        addCircleMarkers(lng = ~LNG, lat = ~LAT, weight = 1,
+                         popup = ~paste0(
+                           paste("Date Occured:",Missing.Date,sep=" "),
+                           paste(", Child Gender:",Gender,sep=" "),
+                           paste(", Child Race:",Race,sep=" "),
+                           paste(", Vehicle Style:",Vehicle.Style,sep=" "),
+                           paste(", Vehicle Color:",Vehicle.Color,sep=" ")
+                         ), data = missingPoints, col = "red")
     } else if ("miss" %in% input$mapOption) {
       leaflet() %>%
         addProviderTiles(providers$Stamen.TonerLite,
                          options = providerTileOptions(noWrap = TRUE)
         ) %>%
-        addCircles(data = missingPointsZip, color = "red")
+        addCircleMarkers(lng = ~LNG, lat = ~LAT, weight = 1,
+                         popup = ~paste0(
+                           paste("Date Occured:",Missing.Date,sep=" "),
+                           paste(", Child Gender:",Gender,sep=" "),
+                           paste(", Child Race:",Race,sep=" "),
+                           paste(", Vehicle Style:",Vehicle.Style,sep=" "),
+                           paste(", Vehicle Color:",Vehicle.Color,sep=" ")
+                         ), data = missingPoints, col = "red")
     } else if ("inci" %in% input$mapOption) {
       leaflet() %>%
         addProviderTiles(providers$Stamen.TonerLite,
                          options = providerTileOptions(noWrap = TRUE)
         ) %>%
-        addCircles(data = attemptsPointsZip)
+        addCircleMarkers(lng = ~LNG, lat = ~LAT, weight = 1,
+                         popup = ~paste0(
+                           paste("Date Occured:",Incident.Date,sep=" "),
+                           paste(", Child Gender:",Child.Gender.1,sep=" "),
+                           paste(", Child Race:",Child.Race.1,sep=" "),
+                           paste(", Child Age:",Child.Perceived.Age.1,sep=" "),
+                           paste(", How Child Escaped:",How.Got.Away,sep=" "),
+                           paste(", Offender Gender:",Offender.Gender.1,sep=" "),
+                           paste(", Offender Age:",Offender.Age.1,sep=" "),
+                           paste(", Vehicle Style:",Vehicle.Style.1,sep=" "),
+                           paste(", Vehicle Color:",Vehicle.Color.1,sep=" "),
+                           paste(", Location Type:",Incident.Location.Type,sep=" ")
+                         ), data = attemptsPoints)
     } else {
       leaflet() %>%
         addProviderTiles(providers$Stamen.TonerLite,

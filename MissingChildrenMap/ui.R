@@ -6,13 +6,13 @@ library(shinyjs)
 
 attempts = read.csv("../../Attempts Hackathon 5 Years of Data.csv")
 missing = read.csv("../../Hackathon Missing Child 5 Years of Data.csv")
-latLonVals = read.csv("../../zipToLatLon.csv")
+postalCodes = read.csv("../../us_postal_codes.csv")
 
 # merge lat/lon values into datasets by zip code
-colnames(attempts)[which(names(attempts) == "Incident.Zip")] <- "ZIP"
-colnames(missing)[which(names(missing) == "Missing.Zip")] <- "ZIP"
-attempts = merge(attempts, latLonVals, by = "ZIP")
-missing = merge(missing, latLonVals, by = "ZIP")
+colnames(attempts)[which(names(attempts) == "Incident.Zip")] <- "Zip.Code"
+colnames(missing)[which(names(missing) == "Missing.Zip")] <- "Zip.Code"
+attempts = merge(attempts, postalCodes, by = "Zip.Code")
+missing = merge(missing, postalCodes, by = "Zip.Code")
 
 # fix the dates
 attempts$Incident.Date = as.Date(attempts$Incident.Date, format = "%d/%m/%Y")

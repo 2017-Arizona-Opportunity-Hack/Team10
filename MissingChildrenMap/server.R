@@ -2,13 +2,16 @@ setwd("~/Desktop/Hackathon/Team10/MissingChildrenMap")
 
 attempts = read.csv("../../Attempts Hackathon 5 Years of Data.csv")
 missing = read.csv("../../Hackathon Missing Child 5 Years of Data.csv")
-latLonVals = read.csv("../../zipToLatLon.csv")
+postalCodes = read.csv("../../us_postal_codes.csv")
+postalCodes = data.frame(Zip.Code = postalCodes$Zip.Code,
+                         Latitude = postalCodes$Latitude,
+                         Longitude = postalCodes$Longitude)
 
 # merge lat/lon values into datasets by zip code
-colnames(attempts)[which(names(attempts) == "Incident.Zip")] <- "ZIP"
-colnames(missing)[which(names(missing) == "Missing.Zip")] <- "ZIP"
-attempts = merge(attempts, latLonVals, by = "ZIP")
-missing = merge(missing, latLonVals, by = "ZIP")
+colnames(attempts)[which(names(attempts) == "Incident.Zip")] <- "Zip.Code"
+colnames(missing)[which(names(missing) == "Missing.Zip")] <- "Zip.Code"
+attempts = merge(attempts, postalCodes, by = "Zip.Code")
+missing = merge(missing, postalCodes, by = "Zip.Code")
 
 # fix the dates
 attempts$Incident.Date = as.Date(attempts$Incident.Date, format = "%d/%m/%Y")
@@ -231,7 +234,7 @@ shinyServer(function(input, output, session) {
         addProviderTiles(providers$Stamen.TonerLite,
                          options = providerTileOptions(noWrap = TRUE)
         ) %>%
-        addCircleMarkers(lng = ~LNG, lat = ~LAT, weight = 1,
+        addCircleMarkers(lng = ~Longitude, lat = ~Latitude, weight = 1,
                    popup = ~paste0(
                      paste("Date Occured:",Incident.Date,sep=" "),
                      paste(", Child Gender:",Child.Gender.1,sep=" "),
@@ -244,7 +247,7 @@ shinyServer(function(input, output, session) {
                      paste(", Vehicle Color:",Vehicle.Color.1,sep=" "),
                      paste(", Location Type:",Incident.Location.Type,sep=" ")
                    ), data = attemptsPoints) %>% 
-        addCircleMarkers(lng = ~LNG, lat = ~LAT, weight = 1,
+        addCircleMarkers(lng = ~Longitude, lat = ~Latitude, weight = 1,
                          popup = ~paste0(
                            paste("Date Occured:",Missing.Date,sep=" "),
                            paste(", Child Gender:",Gender,sep=" "),
@@ -257,7 +260,7 @@ shinyServer(function(input, output, session) {
         addProviderTiles(providers$Stamen.TonerLite,
                          options = providerTileOptions(noWrap = TRUE)
         ) %>%
-        addCircleMarkers(lng = ~LNG, lat = ~LAT, weight = 1,
+        addCircleMarkers(lng = ~Longitude, lat = ~Latitude, weight = 1,
                          popup = ~paste0(
                            paste("Date Occured:",Missing.Date,sep=" "),
                            paste(", Child Gender:",Gender,sep=" "),
@@ -270,7 +273,7 @@ shinyServer(function(input, output, session) {
         addProviderTiles(providers$Stamen.TonerLite,
                          options = providerTileOptions(noWrap = TRUE)
         ) %>%
-        addCircleMarkers(lng = ~LNG, lat = ~LAT, weight = 1,
+        addCircleMarkers(lng = ~Longitude, lat = ~Latitude, weight = 1,
                          popup = ~paste0(
                            paste("Date Occured:",Incident.Date,sep=" "),
                            paste(", Child Gender:",Child.Gender.1,sep=" "),

@@ -104,7 +104,7 @@ shinyUI(
                      ),
                      sidebarMenu(
                        
-                       menuItem("Attempts Only Data", icon = icon("chevron-right"), startExpanded = TRUE,
+                       menuItem("Incidents Only Data", icon = icon("chevron-right"), startExpanded = TRUE,
                                 
                                 sidebarMenu(
                                   

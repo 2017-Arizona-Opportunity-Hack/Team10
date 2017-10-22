@@ -1,6 +1,5 @@
 setwd("~/Desktop/Hackathon/Team10/MissingChildrenMap")
 
-# read in the data
 attempts = read.csv("../../Attempts Hackathon 5 Years of Data.csv")
 missing = read.csv("../../Hackathon Missing Child 5 Years of Data.csv")
 latLonVals = read.csv("../../zipToLatLon.csv")
@@ -11,9 +10,9 @@ colnames(missing)[which(names(missing) == "Missing.Zip")] <- "ZIP"
 attempts = merge(attempts, latLonVals, by = "ZIP")
 missing = merge(missing, latLonVals, by = "ZIP")
 
-# data cleaning
-#attempts$`Incident Date` = as.Date(attempts$`Incident Date`, format = "%d/%m/%Y")
-#missing$`Missing Date` = as.Date(missing$`Missing Date`, format = "%d/%m/%Y")
+# fix the dates
+attempts$Incident.Date = as.Date(attempts$Incident.Date, format = "%d/%m/%Y")
+missing$Missing.Date = as.Date(missing$Missing.Date, format = "%d/%m/%Y")
 
 # fix the -1 values in the method columns
 attempts$Offender.Method.Animal[attempts$Offender.Method.Animal==-1] = 1
@@ -25,6 +24,7 @@ attempts$Offender.Method.Ride[attempts$Offender.Method.Ride==-1] = 1
 shinyServer(function(input, output, session) {
   
   myData = reactive({
+    
     attemptsPoints = attempts
     missingPoints = missing
     
@@ -42,7 +42,6 @@ shinyServer(function(input, output, session) {
     
     # check for city
     if (!is.null(input$city)) {
-      #############updateCheckboxGroupInput(session, "state", selected = character(0))
       attemptsPoints = attemptsPoints[attemptsPoints$Incident.City %in% input$city,]
       missingPoints = missingPoints[missingPoints$Missing.City %in% input$city,]
     }
@@ -52,18 +51,6 @@ shinyServer(function(input, output, session) {
       attemptsPoints = attemptsPoints[attemptsPoints$Incident.State %in% input$state,]
       missingPoints = missingPoints[missingPoints$Missing.State %in% input$state,]
     }
-    
-    # check the date
-    #if (input$dateRange[1] != Sys.Date()) {
-    #from = format(input$dateRange[1])
-    #to = format(input$dateRange[2])
-    #cat(as.Date(from))
-    #cat('\n')
-    #cat(to)
-    #dateSeq = seq(from, to, by=1)
-    #attemptsPoints = attemptsPoints[attemptsPoints$`Incident Date` %in% dataSeq,]
-    #missingPoints = missingPoints[missingPoints$`Missing Date` %in% dataSeq,]
-    #}
     
     # check gender
     if (!is.null(input$gender)) {
@@ -243,7 +230,9 @@ shinyServer(function(input, output, session) {
     missingPointsZip = cbind(missingPoints$LNG, missingPoints$LAT)
     
     # create content for popup
-    #content = paste(sep = "<br/")
+    content = paste(sep = "<br/>",
+                    as.character(missingPoints$Gender)
+                    )
     
     # check for data selected (missing/attempts) and plot map
     if ("miss" %in% input$mapOption & "inci" %in% input$mapOption) {

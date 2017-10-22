@@ -4,6 +4,27 @@ library(shinydashboard)
 library(leaflet)
 library(shinyjs)
 
+attempts = read.csv("../../Attempts Hackathon 5 Years of Data.csv")
+missing = read.csv("../../Hackathon Missing Child 5 Years of Data.csv")
+latLonVals = read.csv("../../zipToLatLon.csv")
+
+# merge lat/lon values into datasets by zip code
+colnames(attempts)[which(names(attempts) == "Incident.Zip")] <- "ZIP"
+colnames(missing)[which(names(missing) == "Missing.Zip")] <- "ZIP"
+attempts = merge(attempts, latLonVals, by = "ZIP")
+missing = merge(missing, latLonVals, by = "ZIP")
+
+# fix the dates
+attempts$Incident.Date = as.Date(attempts$Incident.Date, format = "%d/%m/%Y")
+missing$Missing.Date = as.Date(missing$Missing.Date, format = "%d/%m/%Y")
+
+# fix the -1 values in the method columns
+attempts$Offender.Method.Animal[attempts$Offender.Method.Animal==-1] = 1
+attempts$Offender.Method.Candy[attempts$Offender.Method.Candy==-1] = 1
+attempts$Offender.Method.Money[attempts$Offender.Method.Money==-1] = 1
+attempts$Offender.Method.Other[attempts$Offender.Method.Other==-1] = 1
+attempts$Offender.Method.Ride[attempts$Offender.Method.Ride==-1] = 1
+
 shinyUI(
   dashboardPage(
     dashboardHeader(title = "NCMEC Map View"),
